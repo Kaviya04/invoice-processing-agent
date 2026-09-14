@@ -1,0 +1,18 @@
+VANTAGE IT CONSULTING
+900 Market St, Suite 400, San Francisco, CA
+EIN: 88-1029384
+
+INVOICE #: INV-1002
+Date: 09/05/2026
+Bill To: NovaTech Inc.
+PO#: NT-US-3110
+
+Line Items:
+1. Senior consultant hours (40 hrs @ $145/hr) ........ $5,800.00
+2. Infrastructure review - fixed fee ................. $600.00
+3. Travel & expenses .................................. $310.00
+
+Subtotal: $6,710.00
+Total Due (USD): $6,900.00
+
+Terms: Due on receipt

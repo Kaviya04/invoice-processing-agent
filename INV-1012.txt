@@ -1,0 +1,14 @@
+MERIDIAN OFFICE SUPPLIES
+Hauptstrasse 22, Munich, Germany
+
+Rechnung / Invoice
+Invoice No: INV-1012
+Invoice Date: 2026-09-11
+Customer: NovaTech Analytics GmbH
+PO Reference: NT-DE-4009
+
+Items:
+- Replacement monitors x4              960.00
+- Cabling & mounts                     140.00
+
+Total (EUR): 1,100.00

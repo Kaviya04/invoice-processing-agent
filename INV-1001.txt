@@ -1,0 +1,20 @@
+BRIGHT CLOUD HOSTING LTD
+128 Keizersgracht, Amsterdam, Netherlands
+VAT: NL812233445B01
+
+INVOICE
+
+Invoice Number: INV-1001
+Invoice Date: 03 Sep 2026
+Bill To: NovaTech Solutions B.V.
+PO Reference: NT-BV-2201
+
+Description                          Qty     Unit Price    Amount
+Cloud hosting - Sept 2026            1       1,600.00      1,600.00
+Priority support add-on              1       240.00        240.00
+
+Subtotal:                                                  1,840.00
+VAT (0% - reverse charge):                                 0.00
+TOTAL DUE (EUR):                                            1,840.00
+
+Payment terms: Net 30

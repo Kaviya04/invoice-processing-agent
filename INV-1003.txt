@@ -1,0 +1,16 @@
+MERIDIAN OFFICE SUPPLIES
+Hauptstrasse 22, Munich, Germany
+
+Rechnung / Invoice
+Invoice No: INV-1003
+Invoice Date: 2026-09-04
+Customer: NovaTech Analytics GmbH
+
+Items:
+- Office furniture (desks x2)        480.00
+- Ergonomic chairs x3                 570.00
+- Delivery                             50.00
+
+Total (EUR): 1,100.00
+
+No purchase order reference provided on this invoice.
