@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Processing Agent — Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EEEFE5;
+    --paper-raised: #F7F8F0;
+    --ink: #1E2A22;
+    --ink-soft: #47554A;
+    --line: #C9CFC1;
+    --green: #2F6F4E;
+    --green-pale: #E1EAE3;
+    --amber: #9A5E22;
+    --amber-pale: #F1E4CF;
+    --brick: #93342C;
+    --brick-pale: #F1DCD8;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --serif: 'Fraunces', ui-serif, Georgia, serif;
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #10150F;
+      --paper-raised: #171D15;
+      --ink: #E7E8DE;
+      --ink-soft: #A9B2A4;
+      --line: #313A2C;
+      --green: #5FA37D;
+      --green-pale: #1B2A20;
+      --amber: #D79A54;
+      --amber-pale: #2E2415;
+      --brick: #DE8378;
+      --brick-pale: #301C19;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #10150F;
+    --paper-raised: #171D15;
+    --ink: #E7E8DE;
+    --ink-soft: #A9B2A4;
+    --line: #313A2C;
+    --green: #5FA37D;
+    --green-pale: #1B2A20;
+    --amber: #D79A54;
+    --amber-pale: #2E2415;
+    --brick: #DE8378;
+    --brick-pale: #301C19;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 56px 20px 100px;
+  }
+
+  .sheet {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-style: italic;
+    font-size: clamp(28px, 5vw, 38px);
+    line-height: 1.15;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .lede {
+    font-size: 14px;
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin: 0 0 6px;
+  }
+
+  .lede a { color: var(--green); }
+
+  .runbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 32px 0 8px;
+    flex-wrap: wrap;
+  }
+
+  button.run {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 13px 22px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s ease;
+  }
+  button.run:hover:not(:disabled) { opacity: 0.82; }
+  button.run:disabled { opacity: 0.4; cursor: default; }
+  button.run:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  .run-status {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .console {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    padding: 18px 20px;
+    margin-top: 20px;
+    min-height: 40px;
+    max-height: 260px;
+    overflow-y: auto;
+    display: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .console.show { display: block; }
+  .console .ok { color: #8FCBA5; }
+  .console .warn { color: #E4B978; }
+  .console .bad { color: #E38C82; }
+  .console .cursor { display: inline-block; width: 7px; height: 13px; background: var(--paper); animation: blink 1s steps(1) infinite; vertical-align: -2px; margin-left: 2px; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .summary {
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 28px;
+  }
+  .summary.show { display: grid; }
+  .summary .cell {
+    background: var(--paper-raised);
+    padding: 18px 16px;
+  }
+  .summary .cell .n {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .summary .cell .l {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  .summary .cell.approved .n { color: var(--green); }
+  .summary .cell.review .n { color: var(--amber); }
+  .summary .cell.rejected .n { color: var(--brick); }
+
+  .ledger {
+    display: none;
+    margin-top: 36px;
+    border-top: 1px solid var(--ink);
+  }
+  .ledger.show { display: block; }
+
+  .ledger-head {
+    display: grid;
+    grid-template-columns: 78px 1fr 100px 60px 90px 108px;
+    gap: 10px;
+    padding: 10px 4px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 78px 1fr 100px 60px 90px 108px;
+    gap: 10px;
+    align-items: start;
+    padding: 13px 4px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .row:nth-child(odd) { background: var(--green-pale); }
+  .row:hover { background: var(--paper-raised); }
+
+  .row .amt { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    letter-spacing: 0.02em;
+  }
+  .badge.AUTO_APPROVED { background: var(--green-pale); color: var(--green); border: 1px solid var(--green); }
+  .badge.NEEDS_REVIEW { background: var(--amber-pale); color: var(--amber); border: 1px solid var(--amber); }
+  .badge.REJECTED { background: var(--brick-pale); color: var(--brick); border: 1px solid var(--brick); }
+
+  .detail {
+    display: none;
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    padding: 16px;
+    background: var(--paper-raised);
+    border-left: 2px solid var(--ink);
+    font-size: 12.5px;
+  }
+  .row.open .detail { display: block; }
+
+  .detail .flags {
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+  }
+  .detail .flags li {
+    margin-bottom: 6px;
+    padding-left: 14px;
+    position: relative;
+  }
+  .detail .flags li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--ink-soft);
+  }
+  .detail code {
+    background: var(--green-pale);
+    padding: 1px 5px;
+    font-size: 11.5px;
+  }
+  .detail .none { color: var(--ink-soft); font-style: italic; }
+
+  .detail .raw {
+    margin-top: 12px;
+    white-space: pre-wrap;
+    color: var(--ink-soft);
+    font-size: 11.5px;
+    max-height: 160px;
+    overflow-y: auto;
+    border-top: 1px dashed var(--line);
+    padding-top: 10px;
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  footer a { color: var(--green); }
+
+  @media (max-width: 620px) {
+    .ledger-head { display: none; }
+    .row {
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        "id badge"
+        "vendor vendor"
+        "meta meta";
+      row-gap: 6px;
+    }
+    .row > *:nth-child(1) { grid-area: id; }
+    .row > *:nth-child(2) { grid-area: vendor; }
+    .row > *:nth-child(3) { grid-area: meta; font-size: 11.5px; color: var(--ink-soft); }
+    .row > *:nth-child(4) { display: none; }
+    .row > *:nth-child(5) { display: none; }
+    .row > *:nth-child(6) { grid-area: badge; justify-self: end; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <p class="eyebrow">invoice-processing-agent · live validation demo</p>
+    <h1>Twelve invoices. One question:<br>what would you actually approve?</h1>
+    <p class="lede">This runs the real validation logic from <a href="https://github.com/Kaviya04/invoice-processing-agent" target="_blank" rel="noopener">the GitHub repo</a> — the same <code>validator.py</code> checks, ported line for line — against the same Claude extractions the repo ships in <code>MOCK_MODE</code>. It computes the result in your browser, live. It isn't calling the Claude API per visitor here, for the obvious reason: that would mean putting an API key in a public page. The repo's <code>extractor.py</code> has the real live-extraction path — this page starts one step downstream of it, where the actual decision-making happens.</p>
+  </header>
+
+  <div class="runbar">
+    <button class="run" id="runBtn">Run the batch →</button>
+    <span class="run-status" id="runStatus"></span>
+  </div>
+
+  <div class="console" id="console"></div>
+
+  <div class="summary" id="summary">
+    <div class="cell approved"><div class="n" id="nApproved">0</div><div class="l">auto-approved</div></div>
+    <div class="cell review"><div class="n" id="nReview">0</div><div class="l">needs review</div></div>
+    <div class="cell rejected"><div class="n" id="nRejected">0</div><div class="l">rejected</div></div>
+  </div>
+
+  <div class="ledger" id="ledger">
+    <div class="ledger-head">
+      <div>Invoice</div><div>Vendor</div><div>PO</div><div>Cur.</div><div style="text-align:right">Amount</div><div style="text-align:right">Decision</div>
+    </div>
+    <div id="rows"></div>
+  </div>
+
+  <footer>
+    Click any row once results land to see the extracted fields and exactly which check fired. Full source, README, and the 12 source invoices are in the <a href="https://github.com/Kaviya04/invoice-processing-agent" target="_blank" rel="noopener">repo</a>.
+  </footer>
+</div>
+
+<script>
+// ---- Fixture data: identical to data/mock_extractions.json, po_master.csv, vendor_master.csv ----
+const EXTRACTIONS = {
+  "INV-1001": {invoice_number:"INV-1001", invoice_date:"2026-09-03", vendor:"Bright Cloud Hosting Ltd", bill_to_entity:"NovaTech Solutions B.V.", po_reference:"NT-BV-2201", currency:"EUR", line_items:[{description:"Cloud hosting - Sept 2026", amount:1600.00},{description:"Priority support add-on", amount:240.00}], subtotal:1840.00, total_amount:1840.00, self_reported_confidence:"high"},
+  "INV-1002": {invoice_number:"INV-1002", invoice_date:"2026-09-05", vendor:"Vantage IT Consulting", bill_to_entity:"NovaTech Inc.", po_reference:"NT-US-3110", currency:"USD", line_items:[{description:"Senior consultant hours (40 hrs @ $145/hr)", amount:5800.00},{description:"Infrastructure review - fixed fee", amount:600.00},{description:"Travel & expenses", amount:310.00}], subtotal:6710.00, total_amount:6900.00, self_reported_confidence:"medium"},
+  "INV-1003": {invoice_number:"INV-1003", invoice_date:"2026-09-04", vendor:"Meridian Office Supplies", bill_to_entity:"NovaTech Analytics GmbH", po_reference:null, currency:"EUR", line_items:[{description:"Office furniture (desks x2)", amount:480.00},{description:"Ergonomic chairs x3", amount:570.00},{description:"Delivery", amount:50.00}], subtotal:1100.00, total_amount:1100.00, self_reported_confidence:"low"},
+  "INV-1004": {invoice_number:"INV-1004", invoice_date:"2026-09-06", vendor:"Atlas Legal Partners", bill_to_entity:"NovaTech Inc.", po_reference:"NT-US-3115", currency:"USD", line_items:[{description:"Contract review and drafting (16 hrs @ $150/hr)", amount:2400.00}], subtotal:2400.00, total_amount:2400.00, self_reported_confidence:"high"},
+  "INV-1005": {invoice_number:"INV-1001", invoice_date:"2026-09-03", vendor:"Bright Cloud Hosting Ltd", bill_to_entity:"NovaTech Solutions B.V.", po_reference:"NT-BV-2201", currency:"EUR", line_items:[{description:"Cloud hosting - Sept 2026", amount:1600.00},{description:"Priority support add-on", amount:240.00}], subtotal:1840.00, total_amount:1840.00, self_reported_confidence:"high"},
+  "INV-1006": {invoice_number:"INV-1006", invoice_date:"2026-09-07", vendor:"Quantum Marketing Group", bill_to_entity:"NovaTech Analytics GmbH", po_reference:"NT-DE-4002", currency:"USD", line_items:[{description:"Q3 campaign management retainer", amount:3150.00}], subtotal:3150.00, total_amount:3150.00, self_reported_confidence:"high"},
+  "INV-1007": {invoice_number:"INV-1007", invoice_date:"2026-09-08", vendor:"Crestline Logistics", bill_to_entity:"NovaTech Inc.", po_reference:"NT-US-3199", currency:"USD", line_items:[{description:"Freight & customs handling - August shipment", amount:890.00}], subtotal:890.00, total_amount:890.00, self_reported_confidence:"high"},
+  "INV-1008": {invoice_number:"INV-1008", invoice_date:"2026-09-08", vendor:"Pinnacle Facilities Services", bill_to_entity:"NovaTech Solutions B.V.", po_reference:"NT-BV-2205", currency:"EUR", line_items:[{description:"Monthly office cleaning & maintenance - Sept 2026", amount:975.50}], subtotal:975.50, total_amount:975.50, self_reported_confidence:"high"},
+  "INV-1009": {invoice_number:"INV-1009", invoice_date:"2026-09-09", vendor:"Solace Payroll Services", bill_to_entity:"NovaTech Analytics GmbH", po_reference:"NT-DE-4006", currency:"EUR", line_items:[{description:"Payroll processing services - September 2026 (42 employees)", amount:4420.00}], subtotal:4420.00, total_amount:4420.00, self_reported_confidence:"high"},
+  "INV-1010": {invoice_number:"INV-1010", invoice_date:"2026-09-09", vendor:"Fenwick & Cole LLP", bill_to_entity:"NovaTech Inc.", po_reference:"NT-US-3120", currency:"USD", line_items:[{description:"Corporate advisory retainer - September", amount:2650.00}], subtotal:2650.00, total_amount:2650.00, self_reported_confidence:"high"},
+  "INV-1011": {invoice_number:"INV-1011", invoice_date:"2026-09-10", vendor:"Bluepeak Analytics Tools", bill_to_entity:"NovaTech Solutions B.V.", po_reference:"NT-BV-2209", currency:"EUR", line_items:[{description:"Annual analytics platform license (prorated)", amount:612.35}], subtotal:612.35, total_amount:612.35, self_reported_confidence:"high"},
+  "INV-1012": {invoice_number:"INV-1012", invoice_date:"2026-09-11", vendor:"Meridian Office Supplies", bill_to_entity:"NovaTech Analytics GmbH", po_reference:"NT-DE-4009", currency:"EUR", line_items:[{description:"Replacement monitors x4", amount:960.00},{description:"Cabling & mounts", amount:140.00}], subtotal:1100.00, total_amount:1100.00, self_reported_confidence:"high"}
+};
+
+const PO_MASTER = {
+  "NT-BV-2201": {entity:"NovaTech Solutions B.V.", vendor:"Bright Cloud Hosting Ltd", amount:1840.00, currency:"EUR"},
+  "NT-US-3110": {entity:"NovaTech Inc.", vendor:"Vantage IT Consulting", amount:6200.00, currency:"USD"},
+  "NT-US-3115": {entity:"NovaTech Inc.", vendor:"Atlas Legal Partners", amount:1800.00, currency:"USD"},
+  "NT-DE-4002": {entity:"NovaTech Analytics GmbH", vendor:"Quantum Marketing Group", amount:3150.00, currency:"EUR"},
+  "NT-BV-2205": {entity:"NovaTech Solutions B.V.", vendor:"Pinnacle Facilities Services", amount:975.50, currency:"EUR"},
+  "NT-DE-4006": {entity:"NovaTech Analytics GmbH", vendor:"Solace Payroll Services", amount:4420.00, currency:"EUR"},
+  "NT-US-3120": {entity:"NovaTech Inc.", vendor:"Fenwick & Cole LLP", amount:2650.00, currency:"USD"},
+  "NT-BV-2209": {entity:"NovaTech Solutions B.V.", vendor:"Bluepeak Analytics Tools", amount:612.40, currency:"EUR"},
+  "NT-DE-4009": {entity:"NovaTech Analytics GmbH", vendor:"Meridian Office Supplies", amount:500.00, currency:"EUR"}
+};
+
+const VENDOR_MASTER = new Set([
+  "Bright Cloud Hosting Ltd","Vantage IT Consulting","Atlas Legal Partners","Quantum Marketing Group",
+  "Pinnacle Facilities Services","Solace Payroll Services","Fenwick & Cole LLP","Bluepeak Analytics Tools","Meridian Office Supplies"
+]);
+
+const LINE_ITEM_TOLERANCE = 0.02;
+const PO_AMOUNT_TOLERANCE_ABS = 5.00;
+const PO_AMOUNT_TOLERANCE_PCT = 0.02;
+
+// ---- validator.py, ported 1:1 ----
+function validateBatch(extractions) {
+  const results = [];
+  const seenInvoiceNumbers = {};
+
+  for (const [invoiceId, data] of Object.entries(extractions)) {
+    const flags = [];
+    let decision = "AUTO_APPROVED";
+
+    const invNum = data.invoice_number;
+    if (seenInvoiceNumbers[invNum] !== undefined) {
+      flags.push({code:"DUPLICATE_INVOICE_NUMBER", detail:`Invoice number '${invNum}' already processed as ${seenInvoiceNumbers[invNum]}. Do not pay twice.`, severity:"reject"});
+    } else {
+      seenInvoiceNumbers[invNum] = invoiceId;
+    }
+
+    const lineItems = data.line_items || [];
+    const total = data.total_amount;
+    if (lineItems.length && total !== null && total !== undefined) {
+      const lineSum = Math.round(lineItems.reduce((s, li) => s + li.amount, 0) * 100) / 100;
+      if (Math.abs(lineSum - total) > LINE_ITEM_TOLERANCE) {
+        flags.push({code:"LINE_ITEM_MISMATCH", detail:`Line items sum to ${fmt(lineSum)} but stated total is ${fmt(total)} (diff ${fmtSigned(total - lineSum)}).`, severity:"review"});
+      }
+    }
+
+    const poRef = data.po_reference;
+    if (!poRef) {
+      flags.push({code:"MISSING_PO", detail:"No PO reference found on the invoice.", severity:"review"});
+    } else if (!(poRef in PO_MASTER)) {
+      flags.push({code:"PO_NOT_FOUND", detail:`PO '${poRef}' does not exist in PO master.`, severity:"review"});
+    } else {
+      const po = PO_MASTER[poRef];
+      if (data.vendor && data.vendor !== po.vendor) {
+        flags.push({code:"VENDOR_PO_MISMATCH", detail:`Invoice vendor '${data.vendor}' does not match PO vendor '${po.vendor}' for ${poRef}.`, severity:"review"});
+      }
+      if (data.currency && data.currency !== po.currency) {
+        flags.push({code:"CURRENCY_MISMATCH", detail:`Invoice is in ${data.currency} but PO ${poRef} was raised in ${po.currency}.`, severity:"review"});
+      }
+      if (total !== null && total !== undefined) {
+        const tolerance = Math.max(PO_AMOUNT_TOLERANCE_ABS, po.amount * PO_AMOUNT_TOLERANCE_PCT);
+        const diff = total - po.amount;
+        if (Math.abs(diff) > tolerance) {
+          flags.push({code:"AMOUNT_EXCEEDS_PO", detail:`Invoice total ${fmt(total)} vs PO amount ${fmt(po.amount)} (diff ${fmtSigned(diff)}, tolerance ±${fmt(tolerance)}).`, severity:"review"});
+        }
+      }
+    }
+
+    if (data.vendor && !VENDOR_MASTER.has(data.vendor)) {
+      flags.push({code:"UNKNOWN_VENDOR", detail:`'${data.vendor}' is not in the approved vendor master. New vendor onboarding required.`, severity:"review"});
+    }
+
+    if (data.self_reported_confidence === "low") {
+      flags.push({code:"LOW_EXTRACTION_CONFIDENCE", detail:"Claude flagged this extraction as low-confidence — worth a human glance even if no other check failed.", severity:"review"});
+    }
+
+    if (flags.some(f => f.severity === "reject")) decision = "REJECTED";
+    else if (flags.length) decision = "NEEDS_REVIEW";
+
+    results.push({invoiceId, data, flags, decision});
+  }
+  return results;
+}
+
+function fmt(n) { return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtSigned(n) { return (n >= 0 ? "+" : "") + fmt(n); }
+
+// ---- UI wiring ----
+const runBtn = document.getElementById('runBtn');
+const runStatus = document.getElementById('runStatus');
+const consoleEl = document.getElementById('console');
+const summaryEl = document.getElementById('summary');
+const ledgerEl = document.getElementById('ledger');
+const rowsEl = document.getElementById('rows');
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runBatch() {
+  runBtn.disabled = true;
+  runStatus.textContent = '';
+  consoleEl.innerHTML = '';
+  consoleEl.classList.add('show');
+  summaryEl.classList.remove('show');
+  ledgerEl.classList.remove('show');
+  rowsEl.innerHTML = '';
+
+  const ids = Object.keys(EXTRACTIONS);
+  let log = '';
+  const cursor = '<span class="cursor"></span>';
+
+  for (const id of ids) {
+    log += `  extracting ${id}...`;
+    consoleEl.innerHTML = log + cursor;
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+    await sleep(90 + Math.random() * 90);
+    log += ` <span class="ok">✓</span>\n`;
+    consoleEl.innerHTML = log + cursor;
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+
+  await sleep(150);
+  log += `\n  running validator.py checks against po_master + vendor_master...${cursor}`;
+  consoleEl.innerHTML = log;
+  await sleep(500);
+
+  const results = validateBatch(EXTRACTIONS);
+  const counts = {AUTO_APPROVED:0, NEEDS_REVIEW:0, REJECTED:0};
+  results.forEach(r => counts[r.decision]++);
+
+  log = log.replace(cursor, '') + ` done.\n\n`;
+  log += `  auto-approved : ${counts.AUTO_APPROVED}\n  needs review  : ${counts.NEEDS_REVIEW}\n  rejected      : ${counts.REJECTED}\n`;
+  consoleEl.innerHTML = log;
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+
+  document.getElementById('nApproved').textContent = counts.AUTO_APPROVED;
+  document.getElementById('nReview').textContent = counts.NEEDS_REVIEW;
+  document.getElementById('nRejected').textContent = counts.REJECTED;
+  summaryEl.classList.add('show');
+
+  renderRows(results);
+  ledgerEl.classList.add('show');
+
+  runStatus.textContent = 'Done — click a row for detail.';
+  runBtn.disabled = false;
+  runBtn.textContent = 'Run again →';
+}
+
+function decisionLabel(d) {
+  return d === 'AUTO_APPROVED' ? 'Approved' : d === 'NEEDS_REVIEW' ? 'Review' : 'Rejected';
+}
+
+function renderRows(results) {
+  rowsEl.innerHTML = '';
+  results.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const d = r.data;
+    row.innerHTML = `
+      <div>${r.invoiceId}</div>
+      <div>${d.vendor || '—'}</div>
+      <div>${d.po_reference || '—'}</div>
+      <div>${d.currency || '—'}</div>
+      <div class="amt">${d.total_amount != null ? fmt(d.total_amount) : '—'}</div>
+      <div style="text-align:right"><span class="badge ${r.decision}">${decisionLabel(r.decision)}</span></div>
+      <div class="detail">
+        ${r.flags.length
+          ? `<ul class="flags">${r.flags.map(f => `<li><code>${f.code}</code> — ${f.detail}</li>`).join('')}</ul>`
+          : `<p class="none">No flags. Extraction is internally consistent and matches PO, vendor, and currency on file.</p>`
+        }
+        <div class="raw">extracted: ${JSON.stringify(d, null, 2)}</div>
+      </div>
+    `;
+    row.addEventListener('click', () => row.classList.toggle('open'));
+    rowsEl.appendChild(row);
+  });
+}
+
+runBtn.addEventListener('click', runBatch);
+</script>
+</body>
+</html>
